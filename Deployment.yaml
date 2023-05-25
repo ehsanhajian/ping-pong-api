@@ -62,10 +62,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - biconomy.bikhialdige.store
+    - <Your url here>
     secretName: letsencrypt-nginx
   rules:
-    - host: biconomy.bikhialdige.store
+    - host: <Your url here>
       http:
         paths:
           - path: /ping
