@@ -14,44 +14,59 @@ This is a simple API to test that the RapidAPI/Mashape API Proxy is working. Whe
 API is live at https://rapidapi.com/user/RapidAlex/package/ping-pong
 
 ## Deployment
-** This instruction has tested on Digital ocean kubernetes. You need to install Nginx-Ingress controller and Cert-Manager from Digital Ocean marketplace or Helmchart.
+**This instruction has been tested on DigitalOcean Kubernetes. You need to install Nginx Ingress controller and Cert-Manager from the DigitalOcean Marketplace or Helm Chart.**
 
-You need to verify in Cer-Manager and Nginx-ingress pod are running:
+Make sure the Cert-Manager and Nginx Ingress pods are running:
 
-`kubectl get pods -n cert-manager`
-`kubectl get pods --all-namespaces -l app.kubernetes.io/name=ingress-nginx`
-
-Then we need to create a certificate issuer CRD in the respective namespace. You need to insert your email address into `cert-crd.yaml` and run the below command:
-
-`kubectl create -f cert-crd.yaml`
-
-The initial k8s config is done.
-
-## Create Docker Image
-
-You can use `Dockerfile` as a template to build your docker image
-
-docker build  --platform=linux/amd64 -t new-app .
-docker tag new-app:latest <Your Repo>/new-app:latest
-docker push <You Repo>/new-app:latest
-
-In order to follow-up Kubernetes best practice we will separate Namespace and ServiceAccount. We will create SSL for this deployment moreover since we only need to expose /ping api so we use path base routing method. 
-
-## Ingress config
-
-You need to put your URL in Ingress.yaml. 
+```shell
+kubectl get pods -n cert-manager
+kubectl get pods --all-namespaces -l app.kubernetes.io/name=ingress-nginx
 
 ```
- - hosts:
-    - <Put your url here>
-    secretName: letsencrypt-nginx
+
+Next, create a certificate issuer CRD in the respective namespace. Insert your email address into cert-crd.yaml and run the following command:
+
+```shell
+kubectl create -f cert-crd.yaml
+```
+
+The initial Kubernetes configuration is now done.
+
+**Create Docker Image**
+
+You can use the provided Dockerfile as a template to build your Docker image:
+
+```shell
+docker build --platform=linux/amd64 -t new-app .
+docker tag new-app:latest <YourRepo>/new-app:latest
+docker push <YourRepo>/new-app:latest
+```
+
+To follow Kubernetes best practices, we will separate the Namespace and ServiceAccount. We will also create SSL for this deployment. Since we only need to expose the /ping API, we will use path-based routing.
+
+**Ingress Configuration**
+
+Update the URL in `Deployment.yaml` Ingress section:
+
+```shell
+- hosts:
+  - <Put your URL here>
+  secretName: letsencrypt-nginx
   rules:
-    - host: <put your url here>
-      http:
+  - host: <Put your URL here>
+    http:
 ```
-You also need to define a DNS A record and point your desire url to your external kuerbtenes IP address. You can find your external IP by running below command.
 
-`kubectl get svc -n ingress-nginx`
+Additionally, define a DNS A record and point your desired URL to your external Kubernetes IP address. You can find your external IP by running the following command:
 
-Ready for launch?
- `cd k8s && kubectl create -f .`
+```shell
+kubectl get svc -n ingress-nginx
+```
+
+Ready for launch? Run the following command to create the deployment:
+
+```shell
+kubectl create -f Deployment.yaml
+```
+
+
