@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pingpong-namespace
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: new-service-account
+  namespace: pingpong-namespace
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: new-app
+  namespace: pingpong-namespace
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: new-app
+  template:
+    metadata:
+      labels:
+        app: new-app
+    spec:
+      serviceAccountName: new-service-account
+      containers:
+        - name: new-app
+          image: ehsanhajian/new-app:latest
+          ports:
+            - containerPort: 3000
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: new-app-service
+  namespace: pingpong-namespace
+spec:
+  selector:
+    app: new-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: new-app-ingress
+  namespace: pingpong-namespace
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/issuer: letsencrypt-nginx
+spec:
+  tls:
+  - hosts:
+    - biconomy.bikhialdige.store
+    secretName: letsencrypt-nginx
+  rules:
+    - host: biconomy.bikhialdige.store
+      http:
+        paths:
+          - path: /ping
+            pathType: Prefix
+            backend:
+              service:
+                name: new-app-service
+                port:
+                  number: 80
+
